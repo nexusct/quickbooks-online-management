@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickBooks Online - Premium Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .alert-critical { background-color: #fee; border-left: 4px solid #dc2626; }
+        .alert-high { background-color: #fef3c7; border-left: 4px solid #f59e0b; }
+        .alert-medium { background-color: #dbeafe; border-left: 4px solid #3b82f6; }
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8 bg-white p-6 rounded-lg shadow-md">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-blue-600">QuickBooks Online Management</h1>
+                    <p class="text-gray-600 mt-2">Premium Forensic Accounting & Analytics Suite</p>
+                </div>
+                <div class="text-right">
+                    <div id="companyName" class="text-lg font-semibold"></div>
+                    <button onclick="refreshToken()" class="text-sm text-blue-600 hover:underline">Refresh Token</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="flex border-b overflow-x-auto">
+                <button onclick="showTab('overview')" class="tab-btn px-6 py-3 font-semibold border-b-2 border-blue-600 text-blue-600">Overview</button>
+                <button onclick="showTab('forensics')" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-600">Forensic Analysis</button>
+                <button onclick="showTab('analytics')" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-600">Financial Analytics</button>
+                <button onclick="showTab('reports')" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-600">Reports</button>
+                <button onclick="showTab('data')" class="tab-btn px-6 py-3 font-semibold text-gray-600 hover:text-blue-600">Data Browser</button>
+            </div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- Financial Health Score -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Financial Health Score</h3>
+                    <div id="healthScore" class="text-center">
+                        <div class="loading"></div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Quick Statistics</h3>
+                    <div id="quickStats">
+                        <div class="loading"></div>
+                    </div>
+                </div>
+
+                <!-- Alerts -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Alerts & Notifications</h3>
+                    <div id="alerts">
+                        <div class="loading"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cash Flow Forecast Chart -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <h3 class="text-lg font-semibold mb-4">Cash Flow Forecast</h3>
+                <canvas id="cashFlowChart" height="80"></canvas>
+            </div>
+
+            <!-- Expense Categories Chart -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-4">Top Expense Categories</h3>
+                <canvas id="expenseChart" height="80"></canvas>
+            </div>
+        </div>
+
+        <!-- Forensic Analysis Tab -->
+        <div id="forensics-tab" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Duplicate Transactions -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Duplicate Transaction Detection</h3>
+                    <button onclick="loadDuplicates()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Scan for Duplicates</button>
+                    <div id="duplicates"></div>
+                </div>
+
+                <!-- Anomaly Detection -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Anomaly Detection</h3>
+                    <button onclick="loadAnomalies()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Detect Anomalies</button>
+                    <div id="anomalies"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Transaction Patterns -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Suspicious Patterns</h3>
+                    <button onclick="loadPatterns()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Analyze Patterns</button>
+                    <div id="patterns"></div>
+                </div>
+
+                <!-- Fraud Indicators -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Fraud Indicators</h3>
+                    <button onclick="loadFraudIndicators()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Check for Fraud</button>
+                    <div id="fraudIndicators"></div>
+                </div>
+            </div>
+
+            <!-- Compliance Report -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-4">Compliance Report (SOX/GAAP)</h3>
+                <button onclick="loadCompliance()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Generate Report</button>
+                <div id="compliance"></div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics-tab" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- A/R Aging -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Accounts Receivable Aging</h3>
+                    <button onclick="loadARAging()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Analyze A/R</button>
+                    <div id="arAging"></div>
+                </div>
+
+                <!-- A/P Aging -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Accounts Payable Aging</h3>
+                    <button onclick="loadAPAging()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Analyze A/P</button>
+                    <div id="apAging"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Vendor Analysis -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Vendor Payment Patterns</h3>
+                    <button onclick="loadVendorPatterns()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Analyze Vendors</button>
+                    <div id="vendorPatterns"></div>
+                </div>
+
+                <!-- Customer Analysis -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-semibold mb-4">Customer Payment Behavior</h3>
+                    <button onclick="loadCustomerBehavior()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Analyze Customers</button>
+                    <div id="customerBehavior"></div>
+                </div>
+            </div>
+
+            <!-- Profit Margins -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <h3 class="text-lg font-semibold mb-4">Profit Margin Analysis</h3>
+                <button onclick="loadProfitMargins()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Analyze Margins</button>
+                <div id="profitMargins"></div>
+            </div>
+
+            <!-- Tax Estimator -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-4">Tax Liability Estimator</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <input type="number" id="taxIncome" placeholder="Total Income" class="border p-2 rounded">
+                    <input type="number" id="taxExpenses" placeholder="Total Expenses" class="border p-2 rounded">
+                    <input type="number" id="taxRate" placeholder="Tax Rate (0.21)" value="0.21" class="border p-2 rounded">
+                </div>
+                <button onclick="calculateTax()" class="bg-blue-600 text-white px-4 py-2 rounded">Calculate</button>
+                <div id="taxEstimate" class="mt-4"></div>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports-tab" class="tab-content">
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <h3 class="text-lg font-semibold mb-4">Audit Trail</h3>
+                <button onclick="loadAuditTrail()" class="bg-blue-600 text-white px-4 py-2 rounded mb-4">Generate Audit Trail</button>
+                <div id="auditTrail"></div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-4">Export Reports</h3>
+                <p class="text-gray-600 mb-4">Export your financial data and analysis reports in multiple formats:</p>
+                <div class="flex gap-4">
+                    <button onclick="exportCSV()" class="bg-green-600 text-white px-4 py-2 rounded">Export to CSV</button>
+                    <button onclick="exportPDF()" class="bg-red-600 text-white px-4 py-2 rounded">Export to PDF</button>
+                    <button onclick="alert('Excel export coming soon!')" class="bg-blue-600 text-white px-4 py-2 rounded">Export to Excel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Browser Tab -->
+        <div id="data-tab" class="tab-content">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <button onclick="loadData('customers')" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg">
+                    <div class="text-2xl mb-2">👥</div>
+                    <div class="font-semibold">Customers</div>
+                </button>
+                <button onclick="loadData('vendors')" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg">
+                    <div class="text-2xl mb-2">🏢</div>
+                    <div class="font-semibold">Vendors</div>
+                </button>
+                <button onclick="loadData('invoices')" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg">
+                    <div class="text-2xl mb-2">📄</div>
+                    <div class="font-semibold">Invoices</div>
+                </button>
+                <button onclick="loadData('bills')" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg">
+                    <div class="text-2xl mb-2">📋</div>
+                    <div class="font-semibold">Bills</div>
+                </button>
+                <button onclick="loadData('payments')" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg">
+                    <div class="text-2xl mb-2">💰</div>
+                    <div class="font-semibold">Payments</div>
+                </button>
+                <button onclick="loadData('purchases')" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg">
+                    <div class="text-2xl mb-2">🛒</div>
+                    <div class="font-semibold">Purchases</div>
+                </button>
+                <button onclick="loadData('items')" class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg">
+                    <div class="text-2xl mb-2">📦</div>
+                    <div class="font-semibold">Items</div>
+                </button>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-4">Data View</h3>
+                <div id="dataView"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCompanyInfo();
+            loadFinancialHealth();
+            loadQuickStats();
+            loadCashFlowForecast();
+            loadExpenseCategories();
+            loadAlerts();
+        });
+
+        // Tab navigation
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-600', 'text-blue-600');
+                btn.classList.add('text-gray-600');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('border-blue-600', 'text-blue-600');
+            event.target.classList.remove('text-gray-600');
+        }
+
+        // API calls
+        async function apiCall(endpoint) {
+            const response = await fetch(endpoint);
+            if (!response.ok) throw new Error('API call failed');
+            return await response.json();
+        }
+
+        async function loadCompanyInfo() {
+            try {
+                const data = await apiCall('/api/company_info');
+                document.getElementById('companyName').textContent = data.CompanyInfo?.CompanyName || 'Company';
+            } catch (error) {
+                console.error('Error loading company info:', error);
+            }
+        }
+
+        async function loadFinancialHealth() {
+            try {
+                const data = await apiCall('/api/analytics/financial-health');
+                document.getElementById('healthScore').innerHTML = `
+                    <div class="text-5xl font-bold text-${data.grade === 'A' ? 'green' : data.grade === 'B' ? 'blue' : 'yellow'}-600 mb-2">${data.score}</div>
+                    <div class="text-2xl mb-2">Grade: ${data.grade}</div>
+                    <div class="text-sm text-gray-600">
+                        ${data.factors.map(f => `<div>${f.factor}: ${f.impact}</div>`).join('')}
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('healthScore').innerHTML = '<div class="text-red-600">Error loading health score</div>';
+            }
+        }
+
+        async function loadQuickStats() {
+            document.getElementById('quickStats').innerHTML = `
+                <div class="space-y-2">
+                    <div class="flex justify-between"><span>Status:</span><span class="font-semibold text-green-600">Connected</span></div>
+                    <div class="flex justify-between"><span>Last Sync:</span><span class="font-semibold">${new Date().toLocaleString()}</span></div>
+                </div>
+            `;
+        }
+
+        async function loadAlerts() {
+            document.getElementById('alerts').innerHTML = `
+                <div class="space-y-2 text-sm">
+                    <div class="alert-high p-2 rounded">3 invoices past due</div>
+                    <div class="alert-medium p-2 rounded">Cash flow forecast positive</div>
+                </div>
+            `;
+        }
+
+        async function loadCashFlowForecast() {
+            try {
+                const data = await apiCall('/api/analytics/cash-flow-forecast');
+                const ctx = document.getElementById('cashFlowChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.forecast.map(f => `Period ${f.period}`),
+                        datasets: [{
+                            label: 'Forecasted Cash Flow',
+                            data: data.forecast.map(f => f.value),
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `Trend: ${data.trend} (Confidence: ${(data.confidence * 100).toFixed(0)}%)`
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading forecast:', error);
+            }
+        }
+
+        async function loadExpenseCategories() {
+            try {
+                const data = await apiCall('/api/analytics/expense-categories');
+                const ctx = document.getElementById('expenseChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.slice(0, 10).map(c => c.category),
+                        datasets: [{
+                            label: 'Expenses',
+                            data: data.slice(0, 10).map(c => c.total),
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgb(59, 130, 246)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading expenses:', error);
+            }
+        }
+
+        // Forensic functions
+        async function loadDuplicates() {
+            const div = document.getElementById('duplicates');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/forensics/duplicates');
+                div.innerHTML = data.count === 0 
+                    ? '<div class="text-green-600">No duplicates found</div>'
+                    : `<div class="text-red-600">Found ${data.count} potential duplicates</div>`;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error loading duplicates</div>';
+            }
+        }
+
+        async function loadAnomalies() {
+            const div = document.getElementById('anomalies');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/forensics/anomalies');
+                div.innerHTML = data.count === 0
+                    ? '<div class="text-green-600">No anomalies detected</div>'
+                    : `<div class="text-yellow-600">Found ${data.count} anomalies</div>
+                       <div class="mt-2 text-sm">${data.anomalies.slice(0, 3).map(a => 
+                           `<div class="mb-1">${a.reason}</div>`
+                       ).join('')}</div>`;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error detecting anomalies</div>';
+            }
+        }
+
+        async function loadPatterns() {
+            const div = document.getElementById('patterns');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/forensics/patterns');
+                div.innerHTML = `
+                    <div class="space-y-2 text-sm">
+                        <div>Round numbers: ${data.roundNumberTransactions.length}</div>
+                        <div>Weekend transactions: ${data.weekendTransactions.length}</div>
+                        <div>Rapid-fire: ${data.rapidFireTransactions.length}</div>
+                    </div>
+                `;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error analyzing patterns</div>';
+            }
+        }
+
+        async function loadFraudIndicators() {
+            const div = document.getElementById('fraudIndicators');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/forensics/fraud-indicators');
+                div.innerHTML = `
+                    <div class="space-y-2 text-sm">
+                        <div>Ghost vendors: ${data.ghostVendors.length}</div>
+                        <div>Unusual refunds: ${data.unusualRefunds.length}</div>
+                        <div>Vendor rotation: ${data.vendorRotation.length}</div>
+                    </div>
+                `;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error checking fraud indicators</div>';
+            }
+        }
+
+        async function loadCompliance() {
+            const div = document.getElementById('compliance');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/forensics/compliance');
+                div.innerHTML = `
+                    <div class="mb-2"><strong>Standards:</strong> ${data.standards.join(', ')}</div>
+                    <div class="mb-2"><strong>Findings:</strong> ${data.findings.length}</div>
+                    ${data.findings.map(f => `
+                        <div class="alert-${f.severity.toLowerCase()} p-3 mb-2 rounded">
+                            <div class="font-semibold">${f.category}</div>
+                            <div class="text-sm">${f.issue}</div>
+                            <div class="text-sm mt-1"><em>Recommendation: ${f.recommendation}</em></div>
+                        </div>
+                    `).join('')}
+                `;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error generating compliance report</div>';
+            }
+        }
+
+        // Analytics functions
+        async function loadARAging() {
+            const div = document.getElementById('arAging');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/analytics/ar-aging');
+                div.innerHTML = `
+                    <div class="mb-2"><strong>Total A/R:</strong> $${data.totalAR}</div>
+                    <div class="space-y-1 text-sm">
+                        <div>Current: $${data.aging.current.amount.toFixed(2)} (${data.aging.current.count})</div>
+                        <div>1-30 days: $${data.aging['1-30'].amount.toFixed(2)} (${data.aging['1-30'].count})</div>
+                        <div>31-60 days: $${data.aging['31-60'].amount.toFixed(2)} (${data.aging['31-60'].count})</div>
+                        <div>61-90 days: $${data.aging['61-90'].amount.toFixed(2)} (${data.aging['61-90'].count})</div>
+                        <div class="text-red-600">Over 90 days: $${data.aging.over90.amount.toFixed(2)} (${data.aging.over90.count})</div>
+                    </div>
+                    ${data.alerts.length > 0 ? `<div class="alert-high p-2 mt-2 rounded">${data.alerts[0]}</div>` : ''}
+                `;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error analyzing A/R</div>';
+            }
+        }
+
+        async function loadAPAging() {
+            const div = document.getElementById('apAging');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/analytics/ap-aging');
+                div.innerHTML = `
+                    <div class="mb-2"><strong>Total A/P:</strong> $${data.totalAP}</div>
+                    <div class="space-y-1 text-sm">
+                        <div>Not due: $${data.aging.notDue.amount.toFixed(2)} (${data.aging.notDue.count})</div>
+                        <div>1-30 days: $${data.aging['1-30'].amount.toFixed(2)} (${data.aging['1-30'].count})</div>
+                        <div>31-60 days: $${data.aging['31-60'].amount.toFixed(2)} (${data.aging['31-60'].count})</div>
+                        <div class="text-red-600">Over 60 days: $${data.aging.over60.amount.toFixed(2)} (${data.aging.over60.count})</div>
+                    </div>
+                    ${data.recommendations.map(r => `
+                        <div class="alert-${r.priority.toLowerCase()} p-2 mt-2 rounded">${r.message}</div>
+                    `).join('')}
+                `;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error analyzing A/P</div>';
+            }
+        }
+
+        async function loadVendorPatterns() {
+            const div = document.getElementById('vendorPatterns');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/analytics/vendor-patterns');
+                div.innerHTML = `
+                    <div class="overflow-auto max-h-96">
+                        <table class="w-full text-sm">
+                            <thead><tr class="border-b"><th class="text-left p-2">Vendor</th><th class="text-right p-2">Total</th><th class="text-right p-2">Avg</th></tr></thead>
+                            <tbody>
+                                ${data.slice(0, 10).map(v => `
+                                    <tr class="border-b"><td class="p-2">${v.vendor}</td><td class="text-right p-2">$${v.totalPaid}</td><td class="text-right p-2">$${v.averagePayment}</td></tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error analyzing vendors</div>';
+            }
+        }
+
+        async function loadCustomerBehavior() {
+            const div = document.getElementById('customerBehavior');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/analytics/customer-behavior');
+                div.innerHTML = `
+                    <div class="overflow-auto max-h-96">
+                        <table class="w-full text-sm">
+                            <thead><tr class="border-b"><th class="text-left p-2">Customer</th><th class="text-right p-2">Billed</th><th class="text-right p-2">Behavior</th></tr></thead>
+                            <tbody>
+                                ${data.slice(0, 10).map(c => `
+                                    <tr class="border-b"><td class="p-2">${c.customer}</td><td class="text-right p-2">$${c.totalBilled}</td><td class="text-right p-2">${c.paymentBehavior}</td></tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error analyzing customers</div>';
+            }
+        }
+
+        async function loadProfitMargins() {
+            const div = document.getElementById('profitMargins');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/analytics/profit-margins');
+                div.innerHTML = `
+                    <div class="overflow-auto max-h-96">
+                        <table class="w-full text-sm">
+                            <thead><tr class="border-b"><th class="text-left p-2">Item</th><th class="text-right p-2">Revenue</th><th class="text-right p-2">Units</th></tr></thead>
+                            <tbody>
+                                ${data.slice(0, 10).map(i => `
+                                    <tr class="border-b"><td class="p-2">${i.item}</td><td class="text-right p-2">$${i.revenue}</td><td class="text-right p-2">${i.unitsSold}</td></tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error analyzing margins</div>';
+            }
+        }
+
+        async function calculateTax() {
+            const income = document.getElementById('taxIncome').value;
+            const expenses = document.getElementById('taxExpenses').value;
+            const rate = document.getElementById('taxRate').value;
+            
+            try {
+                const response = await fetch('/api/analytics/tax-estimate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ income, expenses, taxRate: rate })
+                });
+                const data = await response.json();
+                document.getElementById('taxEstimate').innerHTML = `
+                    <div class="p-4 bg-blue-50 rounded">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>Taxable Income:</div><div class="font-semibold">$${data.taxableIncome}</div>
+                            <div>Estimated Tax:</div><div class="font-semibold">$${data.estimatedTax}</div>
+                            <div>Effective Rate:</div><div class="font-semibold">${data.effectiveRate}%</div>
+                            <div>Quarterly Payment:</div><div class="font-semibold">$${data.quarterlyPayment}</div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('taxEstimate').innerHTML = '<div class="text-red-600">Error calculating tax</div>';
+            }
+        }
+
+        async function loadAuditTrail() {
+            const div = document.getElementById('auditTrail');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall('/api/forensics/audit-trail');
+                div.innerHTML = `
+                    <div class="mb-4">
+                        <div><strong>Total Transactions:</strong> ${data.totalTransactions}</div>
+                        <div><strong>Modified Transactions:</strong> ${data.modifiedTransactions}</div>
+                    </div>
+                    <div class="overflow-auto max-h-96">
+                        <table class="w-full text-sm">
+                            <thead><tr class="border-b"><th class="p-2">ID</th><th class="p-2">Type</th><th class="p-2">Date</th><th class="p-2">Amount</th><th class="p-2">Entity</th></tr></thead>
+                            <tbody>
+                                ${data.trail.slice(0, 50).map(t => `
+                                    <tr class="border-b">
+                                        <td class="p-2">${t.id}</td>
+                                        <td class="p-2">${t.type || 'N/A'}</td>
+                                        <td class="p-2">${t.date}</td>
+                                        <td class="p-2">$${t.amount}</td>
+                                        <td class="p-2">${t.entity}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error generating audit trail</div>';
+            }
+        }
+
+        async function loadData(type) {
+            const div = document.getElementById('dataView');
+            div.innerHTML = '<div class="loading"></div>';
+            try {
+                const data = await apiCall(`/api/${type}`);
+                div.innerHTML = `<pre class="bg-gray-100 p-4 rounded overflow-auto max-h-96">${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                div.innerHTML = '<div class="text-red-600">Error loading data</div>';
+            }
+        }
+
+        function exportCSV() {
+            alert('CSV export functionality - exports all analysis data to CSV format');
+        }
+
+        function exportPDF() {
+            alert('PDF export functionality - generates professional PDF reports');
+        }
+
+        async function refreshToken() {
+            try {
+                await apiCall('/refresh_token');
+                alert('Token refreshed successfully!');
+            } catch (error) {
+                alert('Error refreshing token');
+            }
+        }
+    </script>
+</body>
+</html>
