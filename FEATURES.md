@@ -224,14 +224,15 @@ This tool transforms QuickBooks Online into a comprehensive forensic accounting 
 | Fraud Prevention | $50,000 - $250,000 |
 | Compliance Savings | $10,000 - $40,000 |
 | Time Savings (30 hrs/mo @ $75/hr) | $27,000 |
-| Better Cash Management (10%) | $25,000 - $100,000 |
-| Collection Improvements | $50,000 - $500,000 |
-| **Total Annual Value** | **$162,000 - $917,000** |
+| Cash Flow Optimization (10%) | $25,000 - $100,000 |
+| **Core Total Annual Value** | **$112,000 - $417,000** |
+
+_Additional value from collection improvements can add $50,000 - $500,000 more depending on business size_
 
 ### Subscription ROI
 - **Monthly Cost**: $99 - $299
 - **Annual Cost**: $1,188 - $3,588
-- **ROI**: 4,500% - 77,000%
+- **ROI**: 9,300% - 11,500%
 - **Payback Period**: < 1 week
 
 ## 🎁 Additional Benefits
@@ -303,6 +304,6 @@ This tool transforms QuickBooks Online into a comprehensive forensic accounting 
 
 ## ✨ Conclusion
 
-This tool provides **$162,000 - $917,000 in annual value** for a subscription cost of only **$1,188 - $3,588 per year**, representing an **ROI of 4,500% - 77,000%**. 
+This tool provides **$112,000 - $417,000 in core annual value** (with additional collection improvements potentially adding $50,000 - $500,000 more) for a subscription cost of only **$1,188 - $3,588 per year**, representing an **ROI of 9,300% - 11,500%**. 
 
 With 23+ premium features spanning forensic accounting, financial analytics, and data management, this tool is easily worth 10-100x its subscription price and provides capabilities typically only available to enterprise-level organizations.

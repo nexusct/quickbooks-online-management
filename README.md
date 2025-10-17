@@ -281,13 +281,14 @@ Visit `http://localhost:3000` to access the application.
 ## 💰 ROI Calculation
 
 **For a small business:**
-- Accountant time saved: 30 hours/month @ $75/hr = $2,250/month
-- Fraud prevention: Potential savings of $50,000+/year
-- Compliance automation: $5,000/year in audit prep savings
-- Better cash flow management: 5-10% improvement = $5,000-$20,000/year
+- Accountant time saved: 30 hours/month @ $75/hr = $27,000/year
+- Fraud prevention: Potential savings of $50,000-$250,000/year
+- Compliance automation: $10,000-$40,000/year in audit prep savings
+- Better cash flow management: 10% improvement = $25,000-$100,000/year
 
-**Total potential value: $50,000 - $100,000/year**
-**Subscription price: $99-299/month is highly justifiable**
+**Total potential value: $112,000 - $417,000/year**
+**Annual cost: $1,188-$3,588/year**
+**ROI: 9,300% - 11,500%**
 
 ## 🔒 Security
 

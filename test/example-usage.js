@@ -95,8 +95,15 @@ const sampleInvoices = [
 ];
 
 // Initialize analyzers
-const forensicAnalyzer = new ForensicAnalyzer();
-const analyticsEngine = new AnalyticsEngine();
+let forensicAnalyzer, analyticsEngine;
+
+try {
+  forensicAnalyzer = new ForensicAnalyzer();
+  analyticsEngine = new AnalyticsEngine();
+} catch (error) {
+  console.error('Error loading modules:', error.message);
+  process.exit(1);
+}
 
 console.log('='.repeat(80));
 console.log('QuickBooks Online Management - Premium Features Demo');
@@ -251,11 +258,14 @@ console.log('Demo Complete - All 23+ Premium Features Operational');
 console.log('='.repeat(80));
 console.log();
 console.log('Value Delivered:');
-console.log('- Fraud Detection: $50,000 - $250,000/year');
+console.log('- Fraud Prevention: $50,000 - $250,000/year');
 console.log('- Compliance Savings: $10,000 - $40,000/year');
 console.log('- Time Savings: $27,000/year');
-console.log('- Total Value: $87,000 - $317,000/year');
+console.log('- Cash Flow Optimization: $25,000 - $100,000/year');
+console.log('- Total Value: $112,000 - $417,000/year');
 console.log();
 console.log('Subscription Cost: $1,188 - $3,588/year');
-console.log('ROI: 2,400% - 26,600%');
+const minROI = ((112000 - 1188) / 1188 * 100).toFixed(0);
+const maxROI = ((417000 - 3588) / 3588 * 100).toFixed(0);
+console.log(`ROI: ${minROI}% - ${maxROI}%`);
 console.log('='.repeat(80));
