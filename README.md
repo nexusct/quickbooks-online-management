@@ -148,9 +148,23 @@ quickbooks-online-management/
 
 ### Running Tests
 
+The project includes a test suite to validate all improvements:
+
 ```bash
+# Run tests (without server)
 npm test
+
+# Run tests with a running server for full validation
+npm start  # In one terminal
+npm test   # In another terminal
 ```
+
+The test suite validates:
+- File structure and documentation
+- Security implementations
+- API endpoints
+- Error handling
+- Configuration
 
 ## Contributing
 
