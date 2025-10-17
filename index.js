@@ -24,11 +24,20 @@ app.use((req, res, next) => {
 // CORS configuration for multi-cloud deployment
 app.use((req, res, next) => {
   const allowedOrigins = process.env.ALLOWED_ORIGINS 
-    ? process.env.ALLOWED_ORIGINS.split(',') 
+    ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(origin => {
+        // Basic URL validation
+        try {
+          new URL(origin);
+          return true;
+        } catch (e) {
+          console.error(`Invalid origin in ALLOWED_ORIGINS: ${origin}`);
+          return false;
+        }
+      })
     : ['http://localhost:3000'];
   
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+  if (origin && allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   
@@ -203,10 +212,20 @@ app.get('/api/company_info', ensureAuthenticated, (req, res) => {
   });
 });
 
+// Helper function to validate and parse pagination parameters
+function parsePaginationParams(query) {
+  const limitParam = parseInt(query.limit);
+  const offsetParam = parseInt(query.offset);
+  
+  const limit = (limitParam && limitParam > 0 && limitParam <= 100) ? limitParam : 10;
+  const offset = (offsetParam && offsetParam > 0) ? offsetParam : 1;
+  
+  return { limit, offset };
+}
+
 // Get customers
 app.get('/api/customers', ensureAuthenticated, (req, res) => {
-  const limit = Math.min(parseInt(req.query.limit) || 10, 100);
-  const offset = parseInt(req.query.offset) || 1;
+  const { limit, offset } = parsePaginationParams(req.query);
   
   qboConnection.findCustomers({ limit, offset }, (err, customers) => {
     if (err) {
@@ -219,8 +238,7 @@ app.get('/api/customers', ensureAuthenticated, (req, res) => {
 
 // Get invoices
 app.get('/api/invoices', ensureAuthenticated, (req, res) => {
-  const limit = Math.min(parseInt(req.query.limit) || 10, 100);
-  const offset = parseInt(req.query.offset) || 1;
+  const { limit, offset } = parsePaginationParams(req.query);
   
   qboConnection.findInvoices({ limit, offset }, (err, invoices) => {
     if (err) {
@@ -233,8 +251,7 @@ app.get('/api/invoices', ensureAuthenticated, (req, res) => {
 
 // Get items/products
 app.get('/api/items', ensureAuthenticated, (req, res) => {
-  const limit = Math.min(parseInt(req.query.limit) || 10, 100);
-  const offset = parseInt(req.query.offset) || 1;
+  const { limit, offset } = parsePaginationParams(req.query);
   
   qboConnection.findItems({ limit, offset }, (err, items) => {
     if (err) {
@@ -264,7 +281,14 @@ app.get('/refresh_token', async (req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
+  // Log error without sensitive information
+  console.error('Unhandled error:', {
+    message: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    url: req.url,
+    method: req.method,
+  });
+  
   res.status(500).json({
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',

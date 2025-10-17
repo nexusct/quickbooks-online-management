@@ -77,7 +77,11 @@
         // Display data helper
         function displayData(data) {
             const display = document.getElementById('data-display');
-            display.innerHTML = `<pre class="text-sm text-gray-800 whitespace-pre-wrap">${JSON.stringify(data, null, 2)}</pre>`;
+            const pre = document.createElement('pre');
+            pre.className = 'text-sm text-gray-800 whitespace-pre-wrap';
+            pre.textContent = JSON.stringify(data, null, 2);
+            display.innerHTML = '';
+            display.appendChild(pre);
         }
 
         // Display error helper
