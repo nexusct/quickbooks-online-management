@@ -1,6 +1,6 @@
 {
   "name": "quickbooks-online-management",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A Multi-Cloud Proxy for managing QuickBooks Online with authentication GUI",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,10 @@
     "test": "node test-improvements.js",
     "test:watch": "nodemon test-improvements.js",
     "audit-fix": "npm audit fix",
-    "security-check": "npm audit"
+    "security-check": "npm audit",
+    "docker:build": "docker build -t quickbooks-online-management .",
+    "docker:run": "docker-compose up -d",
+    "docker:stop": "docker-compose down"
   },
   "keywords": [
     "quickbooks",
@@ -29,10 +32,18 @@
   "dependencies": {
     "axios": "^1.6.7",
     "body-parser": "^1.20.2",
+    "compression": "^1.8.1",
+    "crypto-js": "^4.2.0",
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
+    "express-rate-limit": "^8.1.0",
     "intuit-oauth": "^4.0.0",
-    "node-quickbooks": "^2.0.43"
+    "morgan": "^1.10.1",
+    "node-cache": "^5.1.2",
+    "node-quickbooks": "^2.0.43",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.3"

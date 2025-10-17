@@ -1,5 +1,5 @@
 /**
- * Simple test script to validate the 10 improvements made to the application
+ * Test script to validate the 25 improvements (10 original + 15 new) made to the application
  * Run with: node test-improvements.js
  */
 
@@ -76,7 +76,8 @@ function makeRequest(endpoint) {
 }
 
 async function runTests() {
-  log('\n=== Testing 10 Improvements to QuickBooks Online Management ===\n', 'blue');
+  log('\n=== Testing 25 Improvements to QuickBooks Online Management ===\n', 'blue');
+  log('Original 10 improvements + 15 new improvements\n', 'yellow');
 
   // Test 1: .gitignore exists
   log('Test 1: .gitignore file', 'yellow');
@@ -137,6 +138,87 @@ async function runTests() {
   testFileExists('✓ LICENSE exists', path.join(__dirname, 'LICENSE'));
   testFileExists('✓ SECURITY.md exists', path.join(__dirname, 'SECURITY.md'));
   testFileExists('✓ DEPLOYMENT.md exists', path.join(__dirname, 'DEPLOYMENT.md'));
+
+  // === NEW IMPROVEMENTS (11-25) ===
+  
+  // Test 11: Rate limiting
+  log('\nTest 11: Rate limiting middleware', 'yellow');
+  test('✓ Rate limiting dependency exists', indexJs.includes("require('express-rate-limit')"), true);
+  test('✓ Rate limiter configured', indexJs.includes('apiLimiter'), true);
+
+  // Test 12: Request/Response logging
+  log('\nTest 12: Request/Response logging', 'yellow');
+  test('✓ Morgan logger dependency exists', indexJs.includes("require('morgan')"), true);
+  test('✓ Morgan configured', indexJs.includes('morgan('), true);
+
+  // Test 13: Environment validation
+  log('\nTest 13: Environment variable validation', 'yellow');
+  test('✓ Environment validation function exists', indexJs.includes('validateEnvironment'), true);
+  test('✓ Required variables checked', indexJs.includes('QB_CLIENT_ID'), true);
+
+  // Test 14: Graceful shutdown
+  log('\nTest 14: Graceful shutdown handling', 'yellow');
+  test('✓ Graceful shutdown function exists', indexJs.includes('gracefulShutdown'), true);
+  test('✓ SIGTERM handler exists', indexJs.includes('SIGTERM'), true);
+  test('✓ SIGINT handler exists', indexJs.includes('SIGINT'), true);
+
+  // Test 15: Additional endpoints
+  log('\nTest 15: Additional QuickBooks endpoints', 'yellow');
+  test('✓ Vendors endpoint exists', indexJs.includes('/api/vendors'), true);
+  test('✓ Accounts endpoint exists', indexJs.includes('/api/accounts'), true);
+  test('✓ Payments endpoint exists', indexJs.includes('/api/payments'), true);
+
+  // Test 16: Request ID tracking
+  log('\nTest 16: Request ID tracking', 'yellow');
+  test('✓ UUID dependency exists', indexJs.includes("require('uuid')"), true);
+  test('✓ Request ID middleware exists', indexJs.includes('X-Request-ID'), true);
+
+  // Test 17: Compression
+  log('\nTest 17: Response compression', 'yellow');
+  test('✓ Compression dependency exists', indexJs.includes("require('compression')"), true);
+  test('✓ Compression middleware configured', indexJs.includes('compression()'), true);
+
+  // Test 18: Caching
+  log('\nTest 18: Caching layer', 'yellow');
+  test('✓ Node-cache dependency exists', indexJs.includes("require('node-cache')"), true);
+  test('✓ Cache instance created', indexJs.includes('new NodeCache'), true);
+
+  // Test 19: Docker
+  log('\nTest 19: Docker configuration', 'yellow');
+  testFileExists('✓ Dockerfile exists', path.join(__dirname, 'Dockerfile'));
+  testFileExists('✓ docker-compose.yml exists', path.join(__dirname, 'docker-compose.yml'));
+  testFileExists('✓ .dockerignore exists', path.join(__dirname, '.dockerignore'));
+
+  // Test 20: CI/CD
+  log('\nTest 20: CI/CD pipeline', 'yellow');
+  testFileExists('✓ GitHub Actions workflow exists', path.join(__dirname, '.github', 'workflows', 'ci-cd.yml'));
+
+  // Test 21: Webhooks
+  log('\nTest 21: Webhooks support', 'yellow');
+  test('✓ Crypto module imported', indexJs.includes("require('crypto')"), true);
+  test('✓ Webhook endpoint exists', indexJs.includes('/webhooks/quickbooks'), true);
+  test('✓ Signature verification exists', indexJs.includes('intuit-signature'), true);
+
+  // Test 22: API Documentation
+  log('\nTest 22: API documentation (Swagger)', 'yellow');
+  test('✓ Swagger UI dependency exists', indexJs.includes("require('swagger-ui-express')"), true);
+  test('✓ Swagger JSDoc dependency exists', indexJs.includes("require('swagger-jsdoc')"), true);
+  test('✓ API docs endpoint exists', indexJs.includes('/api-docs'), true);
+
+  // Test 23: API Versioning
+  log('\nTest 23: API versioning', 'yellow');
+  test('✓ v1 router exists', indexJs.includes('v1Router'), true);
+  test('✓ v1 routes mounted', indexJs.includes('/api/v1'), true);
+
+  // Test 24: Additional documentation
+  log('\nTest 24: Additional documentation', 'yellow');
+  testFileExists('✓ IMPROVEMENTS_ADDITIONAL.md exists', path.join(__dirname, 'IMPROVEMENTS_ADDITIONAL.md'));
+
+  // Test 25: Package.json updates
+  log('\nTest 25: Package.json enhancements', 'yellow');
+  const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  test('✓ Docker scripts added', 'docker:build' in packageJson.scripts, true);
+  test('✓ Version updated', packageJson.version >= '1.2.0', true);
 
   // Additional validation tests
   log('\nAdditional Validation Tests:', 'yellow');
