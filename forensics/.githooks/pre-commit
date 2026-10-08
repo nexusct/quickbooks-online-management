@@ -1,0 +1,28 @@
+#!/bin/sh
+# Blocks real-data and secret files from ever entering the repo.
+# Install once per clone (from repo root): git config core.hooksPath forensics/.githooks
+
+set -e
+
+blocked=0
+for f in $(git diff --cached --name-only --diff-filter=ACMR); do
+    case "$f" in
+        .env|.env.*|*/.env|*/.env.*) reason="environment/secrets file" ;;
+        snapshots/*|*/snapshots/*)   reason="immutable evidence snapshot" ;;
+        *.db|*.sqlite|*.sqlite3)     reason="evidence database" ;;
+        dim_customer_alias.csv|*/dim_customer_alias.csv) reason="customer alias map (real names)" ;;
+        exports/*|*/exports/*)       reason="raw source-system export" ;;
+        anomalies*.xlsx|*/anomalies*.xlsx) reason="generated report over real data" ;;
+        reconstructions/*|*/reconstructions/*) reason="per-job reconstruction (real data)" ;;
+        tests/_build/*|*/tests/_build/*) reason="generated test artifact" ;;
+        *) continue ;;
+    esac
+    echo "pre-commit: BLOCKED '$f' ($reason). This must never be committed." >&2
+    blocked=1
+done
+
+if [ "$blocked" -ne 0 ]; then
+    echo "pre-commit: see forensics/CLAUDE.md 'Non-negotiables'. Nothing was committed." >&2
+    exit 1
+fi
+exit 0
