@@ -13,6 +13,7 @@ dim_customer_alias.csv
 # Generated outputs over real data
 anomalies*.xlsx
 reconstructions/
+prescan/
 
 # Test build artifacts
 tests/_build/
