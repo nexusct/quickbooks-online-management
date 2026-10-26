@@ -1,0 +1,24 @@
+# Secrets and credentials — never committed (hook also blocks these)
+.env
+.env.*
+
+# Real data: source exports, immutable snapshots, evidence DB, alias map
+exports/
+snapshots/
+*.db
+*.sqlite
+*.sqlite3
+dim_customer_alias.csv
+
+# Generated outputs over real data
+anomalies*.xlsx
+reconstructions/
+prescan/
+
+# Test build artifacts
+tests/_build/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
