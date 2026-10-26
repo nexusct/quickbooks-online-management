@@ -14,6 +14,7 @@ for f in $(git diff --cached --name-only --diff-filter=ACMR); do
         exports/*|*/exports/*)       reason="raw source-system export" ;;
         anomalies*.xlsx|*/anomalies*.xlsx) reason="generated report over real data" ;;
         reconstructions/*|*/reconstructions/*) reason="per-job reconstruction (real data)" ;;
+        prescan/*|*/prescan/*)       reason="QBO pre-scan output (real data)" ;;
         tests/_build/*|*/tests/_build/*) reason="generated test artifact" ;;
         *) continue ;;
     esac

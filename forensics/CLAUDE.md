@@ -50,6 +50,7 @@ touching anything.
 | `nfe/deleted_jobs.py` | CLI: per-job reconstruction (event chain, old→new, actor, timestamp) from user+audit logs |
 | `nfe/user_activity.py` | `user_activity_profile()` — destructive-action concentration, **lead not conclusion** |
 | `scripts/recalc.py` | Independent re-derivation of every computed figure in the workbook; must print `0 errors` |
+| `scripts/qbo_prescan.py` | QBO-only pre-scan (runs before simPRO exports exist): invoice sequence gaps + open/unapplied balances, deterministic, leads only |
 | `tests/make_fixture.py` | Synthetic fixture + 7 gate checks; must pass before touching real data |
 
 ## Rules (exception register)
