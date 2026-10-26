@@ -15,9 +15,25 @@ A Multi-Cloud Proxy for managing QuickBooks Online with OAuth 2.0 authentication
 ## Prerequisites
 
 - Node.js (v14 or higher)
-- npm or yarn
-- QuickBooks Online Developer Account
+- npm (v6 or higher)
+- QuickBooks Online Developer Account (create at [Intuit Developer Portal](https://developer.intuit.com/))
 - QuickBooks Online App Credentials (Client ID and Secret)
+
+## Required Environment Variables
+
+This application requires the following environment variables to be configured:
+
+| Variable | Required | Description | Example Value |
+|----------|----------|-------------|---------------|
+| `QB_CLIENT_ID` | Yes | Your QuickBooks Client ID from Intuit Developer Portal | `ABxxxxxxxxxxxxxxxxxxxxxxxxxxxx` |
+| `QB_CLIENT_SECRET` | Yes | Your QuickBooks Client Secret (keep secret!) | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` |
+| `QB_REDIRECT_URI` | Yes | OAuth callback URL (must match Intuit app settings) | `http://localhost:3000/callback` |
+| `QB_ENVIRONMENT` | Yes | QuickBooks environment: `sandbox` or `production` | `sandbox` |
+| `PORT` | No | Server port (defaults to 3000) | `3000` |
+| `NODE_ENV` | No | Node environment: `development` or `production` | `development` |
+| `ALLOWED_ORIGINS` | No | Comma-separated list of allowed CORS origins | `http://localhost:3000,https://yourdomain.com` |
+
+**IMPORTANT:** Never commit real credentials to version control. Use environment variables or a secrets manager.
 
 ## Installation
 
@@ -95,13 +111,50 @@ The application will be available at `http://localhost:3000`
 - `GET /health` - Health check endpoint
 - `GET /api/status` - Connection status
 
-## Security Considerations
+## Security
 
-- Never commit your `.env` file to version control
-- Use HTTPS in production
-- Regularly rotate your QuickBooks credentials
-- Keep dependencies updated
-- Use environment-specific configurations
+### Critical Security Practices
+
+1. **Never Commit Secrets**
+   - Never commit `.env` files, credentials, or API keys to git
+   - Use `.gitignore` to exclude sensitive files (already configured)
+   - Review git history before making repositories public
+
+2. **Credential Management**
+   - Store all secrets in environment variables
+   - Use secret management services in production (AWS Secrets Manager, Azure Key Vault, Google Secret Manager)
+   - Rotate credentials regularly (at least every 90 days)
+   - If credentials are ever exposed in git history, rotate them immediately
+
+3. **HTTPS/TLS**
+   - Always use HTTPS in production
+   - Use valid SSL/TLS certificates
+   - Configure proper cipher suites
+
+4. **CORS Configuration**
+   - Configure `ALLOWED_ORIGINS` to restrict allowed domains
+   - Never use wildcard (`*`) origins in production
+   - Validate all origins against a whitelist
+
+5. **Dependency Security**
+   - Run `npm audit` regularly to check for vulnerabilities
+   - Keep all dependencies updated with `npm update`
+   - Review security advisories for critical dependencies
+
+6. **Additional Security Measures**
+   - Implement rate limiting on authentication endpoints
+   - Use short-lived tokens where possible
+   - Enable logging and monitoring for security events
+   - Never log sensitive data (tokens, credentials, passwords)
+
+For detailed security information, see [SECURITY.md](SECURITY.md).
+
+### Known Security Alerts
+
+**Google API Key Exposure (Alert #1):**
+A Google API key (`AIzaSyAd72xUaF049-dbkwTAfSvsjQhmp9YLDpk`) was previously committed to the repository in `.pre-commit-config.yaml` and has been removed as of commit b52b25b. **This key must be rotated immediately** in the Google Cloud Console. The key was exposed in the public git history and should be considered compromised.
+
+**Action Required:** Repository owner must rotate the exposed Google API key at [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
 
 ## Multi-Cloud Deployment
 
