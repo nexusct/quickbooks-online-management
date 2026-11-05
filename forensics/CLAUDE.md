@@ -49,6 +49,7 @@ touching anything.
 | `nfe/report_xlsx.py` | CLI: builds `anomalies.xlsx` (Exceptions, Jobs_vs_Invoices, Labor, Payments, Exposure_Summary) |
 | `nfe/deleted_jobs.py` | CLI: per-job reconstruction (event chain, old→new, actor, timestamp) from user+audit logs |
 | `nfe/user_activity.py` | `user_activity_profile()` — destructive-action concentration, **lead not conclusion** |
+| `scripts/qbo_build_txns.py` | Builds export #6 from raw Intuit MCP invoice pulls; parses the simPRO job number out of line descriptions (`qbo_txns_by_job.csv`) |
 | `scripts/recalc.py` | Independent re-derivation of every computed figure in the workbook; must print `0 errors` |
 | `scripts/qbo_prescan.py` | QBO-only pre-scan (runs before simPRO exports exist): invoice sequence gaps + open/unapplied balances, deterministic, leads only |
 | `tests/make_fixture.py` | Synthetic fixture + 7 gate checks; must pass before touching real data |
@@ -116,6 +117,25 @@ both carry a user and timestamp.
   (`TESTJOB-7001` → `7001`, `Job #7001` → `7001`) so joins line up; a QBO
   `Num` that isn't the simPRO job number will not match — maintain
   `dim_customer_alias.csv` locally (gitignored) for manual mappings.
+- **The QBO invoice number is NOT the simPRO job number.** QBO `Num` is QBO's
+  own sequence (8059, 8060 …); the simPRO job lives in the line description
+  (`Job No. 6207 [Nexus Labor]`). `scripts/qbo_build_txns.py` parses it into
+  `qbo_txns_by_job.csv` (`Job Ref` column) — feed THAT file as `<qbo_txns>`,
+  never the invoice-level CSV, or every job reads as R01 "no QBO invoice".
+  Invoices with no `Job No.` line (recurring SLAs, pre-simPRO 2021 history)
+  fall back to the QBO Num and will not join.
+- Intuit MCP A/R aging **summary totals are inflated**: "Total Receivables" /
+  "Current" / "Overdue" naively sum every row including parent-customer and
+  "Total for X" rows, so grouped customers (IMR, Symphony HC) count 2-3×.
+  Use leaf-row sums only. Verified: top_n=10 stated total equals its ten
+  rows with IMR and Symphony each listed twice.
+- Intuit MCP A/R aging **detail cannot filter credit memos**: QBO types them
+  `CHARGE_MEMO`, which `transaction_type="credit memo"` never matches. Reach
+  them via `customer_name`. Unfiltered detail truncates at 50 rows;
+  `transaction_type=payment` is complete and is the unapplied-cash population.
+- Open A/R includes invoices dated before 2023 (2022 and earlier). The QBO
+  invoice pull must start at 2021-01-01 (or earlier) or the aging will not
+  reconcile to the invoice export.
 - A missing job number in the sequence is worth more investigation than a
   modified invoice whose payment reconciled in both systems (R11/R12
   rank accordingly via severity).
